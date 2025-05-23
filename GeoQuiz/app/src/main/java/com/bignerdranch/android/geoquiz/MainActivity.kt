@@ -4,92 +4,49 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
-import android.util.Log
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.bignerdranch.android.geoquiz.databinding.ActivityMainBinding
-
-private const val TAG = "MainActivity"
+import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-
-    private val quizViewModel: QuizViewModel by viewModels()
+    private lateinit var trueButton: Button
+    private lateinit var falseButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate(Bundle?) called")
         enableEdgeToEdge()
-//        setContentView(R.layout.activity_main)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        Log.d(TAG, "Got a QuizViewModel: $quizViewModel")
-
+        setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        binding.trueButton.setOnClickListener { view: View ->
-            checkAnswer(true)
+        trueButton = findViewById(R.id.true_button)
+        falseButton = findViewById(R.id.false_button)
+
+        trueButton.setOnClickListener { view: View ->
+//            Toast.makeText(
+//                this,
+//                R.string.correct_toast,
+//                Toast.LENGTH_SHORT
+//            ).show()
+            Snackbar.make(
+                view,
+                R.string.correct_toast,
+                Snackbar.LENGTH_SHORT
+            ).show()
         }
 
-        binding.falseButton.setOnClickListener { view: View ->
-            checkAnswer(false)
+        falseButton.setOnClickListener { view: View ->
+            Snackbar.make(
+                view,
+                R.string.incorrect_toast,
+                Snackbar.LENGTH_SHORT
+            ).show()
         }
-
-        binding.nextButton.setOnClickListener {
-            quizViewModel.moveToNext()
-            updateQuestion()
-        }
-
-        updateQuestion()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart() called")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "onResume() called")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "onPause() called")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "onStop() called")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG, "onDestroy() called")
-    }
-
-    private fun updateQuestion() {
-        val questionTextResId = quizViewModel.currentQuestionText
-        binding.questionTextView.setText(questionTextResId)
-    }
-
-    private fun checkAnswer(userAnswer: Boolean) {
-        val correctAnswer = quizViewModel.currentQuestionAnswer
-
-        val messageResId = if (userAnswer == correctAnswer) {
-            R.string.correct_toast
-        } else {
-            R.string.incorrect_toast
-        }
-
-        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
     }
 }
