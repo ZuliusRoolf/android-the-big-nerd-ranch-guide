@@ -19,4 +19,13 @@ import org.junit.jupiter.api.Assertions.*
    quizViewModel.moveToNext()
    assertEquals(R.string.question_australia, quizViewModel.currentQuestionText)
   }
+  @Test
+  fun providesExpectedQuestionAnswer() {
+   val savedStateHandle = SavedStateHandle()
+   val quizViewModel = QuizViewModel(savedStateHandle)
+   assertTrue(quizViewModel.currentQuestionAnswer)
+   quizViewModel.moveToNext()
+   quizViewModel.moveToNext()
+   assertFalse(quizViewModel.currentQuestionAnswer)
+  }
  }
