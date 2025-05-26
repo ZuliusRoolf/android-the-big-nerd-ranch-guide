@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 private const val TAG = "QuizViewModel"
 const val CURRENT_INDEX_KEY = "CURRENT_INDEX_KEY"
 const val IS_CHEATER_KEY = "IS_CHEATER_KEY"
+const val CHEAT_TOKENS_KEY = "CHEAT_TOKENS_KEY"
 
 class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -36,5 +37,9 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
     fun moveToNext() {
         currentIndex = (currentIndex + 1) % questionBank.size
     }
+
+    var cheatTokens: Int
+        get() = savedStateHandle.get(CHEAT_TOKENS_KEY) ?: 3
+        set(value) = savedStateHandle.set(CHEAT_TOKENS_KEY, value)
 
 }

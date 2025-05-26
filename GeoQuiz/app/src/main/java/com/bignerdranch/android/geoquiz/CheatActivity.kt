@@ -3,6 +3,7 @@ package com.bignerdranch.android.geoquiz
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bignerdranch.android.geoquiz.databinding.ActivityCheatBinding
 import com.bignerdranch.android.geoquiz.databinding.ActivityMainBinding
+import org.jetbrains.annotations.ApiStatus
 
 const val EXTRA_ANSWER_SHOWN = "com.bignerdranch.android.geoquiz.answer_shown"
 private const val EXTRA_ANSWER_IS_TRUE = "com.bignerdranch.android.geoquiz.answer_is_true"
@@ -35,6 +37,8 @@ class CheatActivity : AppCompatActivity() {
             binding.answerTextView.setText(answerText)
             setAnswerShownResult(true)
         }
+        val apiLevel: String = "API Level ${Build.VERSION.SDK_INT}"
+        binding.apiLevelTextView.text = apiLevel
     }
 
     private fun setAnswerShownResult(isAnswerShown: Boolean) {

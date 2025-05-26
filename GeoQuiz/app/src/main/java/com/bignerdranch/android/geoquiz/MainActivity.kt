@@ -32,8 +32,17 @@ class MainActivity : AppCompatActivity() {
     ) { result ->
         // Handle result
         if (result.resultCode == Activity.RESULT_OK) {
-            quizViewModel.isCheater =
-                result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+            val cheated = result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+            if (cheated) {
+                quizViewModel.isCheater = true
+                quizViewModel.cheatTokens -= 1
+                val cheatTokenString = "Cheat Tokens: ${quizViewModel.cheatTokens}"
+                binding.cheatTokensTextView.text = cheatTokenString
+                if (quizViewModel.cheatTokens == 0) {
+                    binding.cheatButton.isEnabled = false
+                }
+            }
+
         }
     }
 
@@ -74,6 +83,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateQuestion()
+        val cheatTokenString = "Cheat Tokens: ${quizViewModel.cheatTokens}"
+        binding.cheatTokensTextView.text = cheatTokenString
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             blurCheatButton()
