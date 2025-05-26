@@ -6,7 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 
 private const val TAG = "QuizViewModel"
 const val CURRENT_INDEX_KEY = "CURRENT_INDEX_KEY"
-const val IS_CHEATER_KEY = "IS_CHEATER_KEY"
+const val IS_CHEATER_ARRAY_KEY = "IS_CHEATER_ARRAY_KEY"
 
 class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -19,9 +19,9 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
         Question(R.string.question_asia, true)
     )
 
-    var isCheater: Boolean
-        get() = savedStateHandle.get(IS_CHEATER_KEY) ?: false
-        set(value) = savedStateHandle.set(IS_CHEATER_KEY, value)
+    private var isCheaterArray: BooleanArray
+        get() = savedStateHandle[IS_CHEATER_ARRAY_KEY] ?: BooleanArray(questionBank.size)
+        set(array) = savedStateHandle.set(IS_CHEATER_ARRAY_KEY, array)
 
     private var currentIndex: Int
         get() = savedStateHandle.get(CURRENT_INDEX_KEY) ?: 0
@@ -35,6 +35,16 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
 
     fun moveToNext() {
         currentIndex = (currentIndex + 1) % questionBank.size
+    }
+
+    fun isCheaterOnCurrentQuestion(): Boolean {
+        return isCheaterArray[currentIndex]
+    }
+    fun cheatedOnCurrentQuestion(isCheater: Boolean) {
+        // Remember that arrays are immutable and savedStateHandle do not know when value is changed
+        val array = isCheaterArray
+        array[currentIndex] = isCheater
+        isCheaterArray = array
     }
 
 }
