@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.media3.common.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.android)
+    implementation(libs.androidx.ui.graphics.android)
     testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.jupiter)
