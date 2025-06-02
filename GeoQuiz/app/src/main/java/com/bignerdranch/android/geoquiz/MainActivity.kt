@@ -27,6 +27,8 @@ class MainActivity : AppCompatActivity() {
 
     private val quizViewModel: QuizViewModel by viewModels()
 
+    private val answers = arrayOfNulls<Int>(questionBank.size)
+
     private val cheatLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -119,6 +121,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateQuestion() {
         val questionTextResId = quizViewModel.currentQuestionText
         binding.questionTextView.setText(questionTextResId)
+        updateButtonState()
     }
 
     private fun checkAnswer(userAnswer: Boolean) {
@@ -129,8 +132,27 @@ class MainActivity : AppCompatActivity() {
             userAnswer == correctAnswer -> R.string.correct_toast
             else -> R.string.incorrect_toast
         }
+        answers[currentIndex] = if (userAnswer == correctAnswer) {100} else {0}
+        updateButtonState()
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
+        gradeAnswers()
+    }
+
+    private fun updateButtonState() {
+        binding.trueButton.isEnabled = (answers[currentIndex] == null)
+        binding.falseButton.isEnabled = (answers[currentIndex] == null)
+    }
+
+    private fun gradeAnswers() {
+        var result: Int = 0
+        if (questionBank.size == 0) return
+        for (answer in answers){
+            if (answer == null) return
+            result += answer
+        }
+        result /= questionBank.size
+        Toast.makeText(this, "$result% correct!", Toast.LENGTH_SHORT).show()
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
