@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode == Activity.RESULT_OK) {
             val cheated = result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
             if (cheated) {
-                quizViewModel.isCheater = true
+                quizViewModel.cheatedOnCurrentQuestion(cheated)
                 quizViewModel.cheatTokens -= 1
                 val cheatTokenString = "Cheat Tokens: ${quizViewModel.cheatTokens}"
                 binding.cheatTokensTextView.text = cheatTokenString
@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         val correctAnswer = quizViewModel.currentQuestionAnswer
 
         val messageResId = when {
-            quizViewModel.isCheater -> R.string.judgment_toast
+            quizViewModel.isCheaterOnCurrentQuestion() -> R.string.judgment_toast
             userAnswer == correctAnswer -> R.string.correct_toast
             else -> R.string.incorrect_toast
         }
