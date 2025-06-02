@@ -2,7 +2,9 @@ package com.bignerdranch.android.geoquiz
 
 import androidx.lifecycle.ViewModel
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.SavedStateHandle
+import kotlin.text.get
 
 private const val TAG = "QuizViewModel"
 const val CURRENT_INDEX_KEY = "CURRENT_INDEX_KEY"
@@ -20,6 +22,7 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
         Question(R.string.question_americas, true),
         Question(R.string.question_asia, true)
     )
+    private val answers = arrayOfNulls<Int>(questionBank.size)
 
     private var isCheaterArray: BooleanArray
         get() = savedStateHandle[IS_CHEATER_ARRAY_KEY] ?: BooleanArray(questionBank.size)
@@ -51,6 +54,25 @@ class QuizViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
         val array = isCheaterArray
         array[currentIndex] = isCheater
         isCheaterArray = array
+    }
+
+    fun getAnswer() : Int? {
+        return answers[currentIndex]
+    }
+
+    fun setAnswer(value: Int) {
+        answers[currentIndex] = value
+    }
+
+    fun gradeAnswers(): Int? {
+        var result: Int = 0
+        if (questionBank.size == 0) return null
+        for (answer in answers){
+            if (answer == null) return null
+            result += answer
+        }
+        result /= questionBank.size
+        return result
     }
 
 }
