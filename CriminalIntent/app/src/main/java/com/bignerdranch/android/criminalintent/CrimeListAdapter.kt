@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bignerdranch.android.criminalintent.databinding.ListItemCrimeBinding
+import android.text.format.DateFormat
 
 class CrimeListAdapter(private val crimes: List<Crime>) : RecyclerView.Adapter<CrimeHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
@@ -29,7 +30,7 @@ class CrimeHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
     fun bind(crime: Crime) {
         binding.crimeTitle.text = crime.title
-        binding.crimeDate.text = crime.date.toString()
+        binding.crimeDate.text = DateFormat.format("EEEE, MMMM dd, yyyy", crime.date)
 
         binding.root.setOnClickListener {
             Toast.makeText(
