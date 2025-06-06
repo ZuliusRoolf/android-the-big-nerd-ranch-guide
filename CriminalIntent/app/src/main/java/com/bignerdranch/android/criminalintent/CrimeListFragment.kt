@@ -1,5 +1,6 @@
 package com.bignerdranch.android.criminalintent
 
+import android.graphics.Path
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeDetailBinding
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeListBinding
@@ -44,7 +46,12 @@ class CrimeListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 crimeListViewModel.crimes.collect { crimes ->
-                    binding.crimeRecyclerView.adapter = CrimeListAdapter(crimes)
+                    binding.crimeRecyclerView.adapter =
+                        CrimeListAdapter(crimes) { crimeId ->
+                            findNavController().navigate(
+                                CrimeListFragmentDirections.showCrimeDetail(crimeId)
+                            )
+                        }
                 }
             }
         }
