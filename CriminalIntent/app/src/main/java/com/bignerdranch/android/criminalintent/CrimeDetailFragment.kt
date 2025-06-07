@@ -81,6 +81,19 @@ class CrimeDetailFragment : Fragment() {
             }
             crimeDetailViewModel.updateCrime { it.copy(date = newDate) }
         }
+
+        setFragmentResultListener(
+            TimePickerFragment.REQUEST_KEY_TIME
+        ) { requestKey, bundle ->
+            val newDate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getSerializable(TimePickerFragment.BUNDLE_KEY_TIME, Date::class.java)
+                    ?: throw IllegalStateException("Date is missing or not of type Date")
+            } else {
+                @Suppress("DEPRECATION")
+                bundle.getSerializable(TimePickerFragment.BUNDLE_KEY_TIME) as Date
+            }
+            crimeDetailViewModel.updateCrime { it.copy(date = newDate) }
+        }
     }
 
     override fun onDestroyView() {
@@ -97,6 +110,11 @@ class CrimeDetailFragment : Fragment() {
             crimeDate.setOnClickListener {
                 findNavController().navigate(
                     CrimeDetailFragmentDirections.selectDate(crime.date)
+                )
+            }
+            crimeTime.setOnClickListener {
+                findNavController().navigate(
+                    CrimeDetailFragmentDirections.selectTime(crime.date)
                 )
             }
 
