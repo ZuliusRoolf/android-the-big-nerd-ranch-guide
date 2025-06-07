@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeDetailBinding
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeListBinding
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
@@ -53,6 +54,11 @@ class CrimeListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.addCrimeButton.setOnClickListener {
+            showNewCrime()
+            Log.d("TAG", "${crimeListViewModel.crimes.value.size}")
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 crimeListViewModel.crimes.collect { crimes ->
@@ -62,6 +68,9 @@ class CrimeListFragment : Fragment() {
                                 CrimeListFragmentDirections.showCrimeDetail(crimeId)
                             )
                         }
+                    binding.noCrimeMessage.visibility =
+                        if (crimes.isEmpty()) View.VISIBLE
+                        else View.INVISIBLE
                 }
             }
         }
