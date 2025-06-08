@@ -32,6 +32,10 @@ class CrimeDetailViewModel(crimeId: UUID) : ViewModel() {
         super.onCleared()
         crime.value?.let { crimeRepository.updateCrime(it) }
     }
+
+    suspend fun removeCrime() {
+        crime.value?.let { crimeRepository.removeCrime(it) }
+    }
 }
 
 class CrimeDetailViewModelFactory(

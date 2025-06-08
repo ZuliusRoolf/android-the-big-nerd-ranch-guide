@@ -40,6 +40,12 @@ class CrimeRepository private constructor(
         }
     }
 
+    suspend fun removeCrime(crime: Crime) {
+        coroutineScope.launch {
+            database.crimeDao().removeCrime(crime)
+        }
+    }
+
     companion object {
         private var INSTANCE: CrimeRepository? = null
 

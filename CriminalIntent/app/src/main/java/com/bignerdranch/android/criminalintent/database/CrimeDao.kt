@@ -1,6 +1,7 @@
 package com.bignerdranch.android.criminalintent.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -21,4 +22,7 @@ interface CrimeDao {
 
     @Insert
     suspend fun addCrime(crime: Crime)
+
+    @Delete
+    suspend fun removeCrime(crime: Crime)
 }
