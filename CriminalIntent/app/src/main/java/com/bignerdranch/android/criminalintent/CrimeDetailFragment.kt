@@ -167,7 +167,7 @@ class CrimeDetailFragment : Fragment() {
     }
 
     private fun parseContactSelection(contactUri: Uri) {
-        val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+        val queryFields = arrayOf(ContactsContract.Contacts._ID)
 
         val queryCursor = requireActivity().contentResolver
             .query(contactUri, queryFields, null, null, null)
@@ -191,4 +191,9 @@ class CrimeDetailFragment : Fragment() {
             )
         return resolvedActivity != null
     }
+
+//    TODO: Check if you need to request permissions and not only define them
+//    TODO: Create a function that can query data from contacts
+//    TODO: Make an implicit intent with the phone number to dial
+//    TODO: Read chapter 16 challenge again, Good Luck
 }
