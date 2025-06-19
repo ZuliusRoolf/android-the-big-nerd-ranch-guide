@@ -1,5 +1,7 @@
 package com.bignerdranch.android.criminalintent
 
+import android.content.Context
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +28,7 @@ class CrimeListAdapter(
         val crime = crimes[position]
         holder.bind(crime, onCrimeClicked)
     }
+
 }
 
 class CrimeHolder(
@@ -34,6 +37,7 @@ class CrimeHolder(
     fun bind(crime: Crime, onCrimeClicked: (crimeId: UUID) -> Unit) {
         binding.crimeTitle.text = crime.title
         binding.crimeDate.text = crime.date.toString()
+        binding.root.contentDescription = getCrimeReport(binding.root.context, crime)
 
         binding.root.setOnClickListener {
             onCrimeClicked(crime.id)
@@ -44,5 +48,25 @@ class CrimeHolder(
         } else {
             View.GONE
         }
+    }
+
+    private fun getCrimeReport(context: Context, crime: Crime): String {
+        val solvedString = if (crime.isSolved) {
+            context.getString(R.string.crime_report_solved)
+        } else {
+            context.getString(R.string.crime_report_unsolved)
+        }
+
+        val dateString = DateFormat.format("EEEE, MMMM, dd", crime.date).toString()
+        val suspectText = if (crime.suspect.isBlank()) {
+            context.getString(R.string.crime_report_no_suspect)
+        } else {
+            context.getString(R.string.crime_report_suspect, crime.suspect)
+        }
+
+        return context.getString(
+            R.string.crime_report,
+            crime.title, dateString, solvedString, suspectText
+        )
     }
 }
