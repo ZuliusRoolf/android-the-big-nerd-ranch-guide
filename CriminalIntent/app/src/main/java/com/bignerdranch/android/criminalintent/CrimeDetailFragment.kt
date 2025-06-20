@@ -61,6 +61,11 @@ class CrimeDetailFragment : Fragment() {
                 oldCrime.copy(photoFileName = photoName)
             }
         }
+        binding.crimePhoto.postDelayed(Runnable {
+            binding.crimePhoto.announceForAccessibility(
+                if (didTakePhoto) "Photo got Selected" else "Photo got Cancelled"
+            )
+        }, 100)
     }
     private var photoName: String? = null
 
