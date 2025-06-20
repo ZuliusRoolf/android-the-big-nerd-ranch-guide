@@ -166,6 +166,19 @@ class CrimeDetailFragment : Fragment() {
                 )
             }
 
+            crimePhoto.setOnClickListener {
+                if (crime.photoFileName == null) return@setOnClickListener
+                val photoFile = File(requireContext().applicationContext.filesDir,
+                    crime.photoFileName)
+                val imageUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.bignerdranch.android.criminalintent.fileprovider",
+                    photoFile
+                )
+                ImageViewDialogFragment.newInstance(imageUri)
+                    .show(parentFragmentManager, "zoomed_image")
+            }
+
             crimeSolved.isChecked = crime.isSolved
 
             crimeReport.setOnClickListener {
