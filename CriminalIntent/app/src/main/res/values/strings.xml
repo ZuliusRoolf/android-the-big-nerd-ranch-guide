@@ -30,4 +30,5 @@
     <string name="img_handcuffs">Handcuffs</string>
     <string name="new_crime">New Crime</string>
     <string name="delete_crime">Delete Crime</string>
+    <string name="crime_contact_police">Contact Police</string>
 </resources>
