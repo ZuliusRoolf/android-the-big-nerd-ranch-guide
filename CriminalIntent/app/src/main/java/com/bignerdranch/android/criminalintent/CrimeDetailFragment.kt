@@ -27,6 +27,7 @@ import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeDetailBi
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
+import androidx.core.net.toUri
 
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
@@ -146,6 +147,14 @@ class CrimeDetailFragment : Fragment() {
 
             crimeCall.text = getPhoneNumbersForContact(crime.suspect)[0].ifEmpty {
                 getString(R.string.crime_call_text)
+            }
+
+            crimeCall.setOnClickListener {
+                val number = crimeCall.text.toString()
+                val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                    data = "tel:$number".toUri()
+                }
+                startActivity(dialIntent)
             }
         }
     }
