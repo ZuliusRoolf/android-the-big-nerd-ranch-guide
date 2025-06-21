@@ -40,7 +40,7 @@ class CrimeListAdapter(
         val crime = crimes[position]
         when (holder) {
             is CrimeHolder -> holder.bind(crime, onCrimeClicked)
-            is SeriousCrimeHolder -> holder.bind(crime)
+            is SeriousCrimeHolder -> holder.bind(crime, onCrimeClicked)
         }
 
     }
@@ -93,16 +93,18 @@ class CrimeHolder(
 class SeriousCrimeHolder(
     private val binding: ListItemSeriousCrimeBinding
 ) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(crime: Crime) {
+    fun bind(crime: Crime, onCrimeClicked: (crimeId: UUID) -> Unit) {
         binding.crimeTitle.text = crime.title
         binding.crimeDate.text = crime.date.toString()
 
         binding.root.setOnClickListener {
-            Toast.makeText(
-                binding.root.context,
-                "${crime.title} clicked!",
-                Toast.LENGTH_SHORT
-            ).show()
+            onCrimeClicked(crime.id)
+        }
+
+        binding.crimeSolved.visibility = if (crime.isSolved) {
+            View.VISIBLE
+        } else {
+            View.GONE
         }
 
         binding.contactPoliceButton.setOnClickListener {
@@ -112,5 +114,29 @@ class SeriousCrimeHolder(
                 Toast.LENGTH_SHORT
             ).show()
         }
+
+        binding.root.contentDescription = getCrimeReport(binding.root.context, crime)
+
+    }
+
+    private fun getCrimeReport(context: Context, crime: Crime): String {
+        val solvedString = if (crime.isSolved) {
+            context.getString(R.string.crime_report_solved)
+        } else {
+            context.getString(R.string.crime_report_unsolved)
+        }
+
+        val dateString = DateFormat.format("EEEE, MMMM, dd", crime.date).toString()
+        val suspectText = if (crime.suspect.isBlank()) {
+            context.getString(R.string.crime_report_no_suspect)
+        } else {
+            context.getString(R.string.crime_report_suspect, crime.suspect)
+        }
+
+        return context.getString(
+            R.string.crime_report,
+            crime.title, dateString, solvedString, suspectText
+        )
     }
 }
+

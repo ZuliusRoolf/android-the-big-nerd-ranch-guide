@@ -106,6 +106,12 @@ class CrimeDetailFragment : Fragment() {
                 }
             }
 
+            crimeSerious.setOnCheckedChangeListener { _, isChecked ->
+                crimeDetailViewModel.updateCrime { oldCrime ->
+                    oldCrime.copy(requiresPolice = isChecked)
+                }
+            }
+
             crimeSuspect.setOnClickListener {
                 selectSuspect.launch(null)
             }
@@ -238,6 +244,7 @@ class CrimeDetailFragment : Fragment() {
             }
 
             crimeSolved.isChecked = crime.isSolved
+            crimeSerious.isChecked = crime.requiresPolice
 
             crimeReport.setOnClickListener {
                 val reportIntent = Intent(Intent.ACTION_SEND).apply {

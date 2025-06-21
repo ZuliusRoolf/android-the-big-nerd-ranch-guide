@@ -31,4 +31,5 @@
     <string name="new_crime">New Crime</string>
     <string name="delete_crime">Delete Crime</string>
     <string name="crime_contact_police">Contact Police</string>
+    <string name="crime_serious">Serious</string>
 </resources>
