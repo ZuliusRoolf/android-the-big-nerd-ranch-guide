@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bignerdranch.android.criminalintent.databinding.ListItemCrimeBinding
 import java.util.UUID
+import android.text.format.DateFormat
 
 class CrimeListAdapter(
     private val crimes: List<Crime>,
