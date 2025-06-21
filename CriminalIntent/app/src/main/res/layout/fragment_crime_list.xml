@@ -9,7 +9,28 @@
         android:id="@+id/crime_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:listitem="@layout/list_item_crime"
-        />
+        tools:listitem="@layout/list_item_crime">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <LinearLayout
+        android:id="@+id/no_crime_message"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="There are no crimes" />
+
+        <Button
+            android:id="@+id/add_crime_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Crime" />
+    </LinearLayout>
 
 </FrameLayout>
