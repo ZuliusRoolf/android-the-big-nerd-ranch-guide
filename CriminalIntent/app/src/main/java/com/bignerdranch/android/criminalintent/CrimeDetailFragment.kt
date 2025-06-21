@@ -19,6 +19,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import androidx.core.view.doOnLayout
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
@@ -175,6 +177,8 @@ class CrimeDetailFragment : Fragment() {
             }
             crimeDetailViewModel.updateCrime { it.copy(date = newDate) }
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
     override fun onDestroyView() {
@@ -384,6 +388,19 @@ class CrimeDetailFragment : Fragment() {
                 binding.crimePhoto.tag = null
                 binding.crimePhoto.contentDescription =
                     getString(R.string.crime_photo_no_image_description)
+            }
+        }
+    }
+
+    val callback = object : OnBackPressedCallback(true){
+        override fun handleOnBackPressed() {
+            if (binding.crimeTitle.text.isEmpty()) {
+                Toast.makeText(requireContext(), "The crime needs a title!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+            else {
+                isEnabled = false
+                requireActivity().onBackPressedDispatcher.onBackPressed()
             }
         }
     }
