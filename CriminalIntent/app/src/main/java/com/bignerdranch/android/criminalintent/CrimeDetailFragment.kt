@@ -209,8 +209,10 @@ class CrimeDetailFragment : Fragment() {
 
             updatePhoto(crime.photoFileName)
 
-            crimeCall.text = getPhoneNumbersForContact(crime.suspect)[0].ifEmpty {
-                getString(R.string.crime_call_text)
+            if (getPhoneNumbersForContact(crime.suspect).isNotEmpty()) {
+                crimeCall.text = getPhoneNumbersForContact(crime.suspect)[0].ifEmpty {
+                    getString(R.string.crime_call_text)
+                }
             }
 
             crimeCall.setOnClickListener {
@@ -234,7 +236,7 @@ class CrimeDetailFragment : Fragment() {
         val suspectText = if (crime.suspect.isBlank()) {
             getString(R.string.crime_report_no_suspect)
         } else {
-            getString(R.string.crime_report_suspect, crime.suspect)
+            getString(R.string.crime_report_suspect, getContactName(crime.suspect))
         }
 
         return getString(
