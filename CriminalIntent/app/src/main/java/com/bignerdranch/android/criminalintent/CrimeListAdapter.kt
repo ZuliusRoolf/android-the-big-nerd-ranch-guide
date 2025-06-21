@@ -9,13 +9,15 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bignerdranch.android.criminalintent.databinding.ListItemCrimeBinding
 import java.util.UUID
-import android.text.format.DateFormat
 import com.bignerdranch.android.criminalintent.databinding.ListItemSeriousCrimeBinding
 
 private const val VIEW_TYPE_NORMAL = 0
 private const val VIEW_TYPE_POLICE = 1
 
-class CrimeListAdapter(private val crimes: List<Crime>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class CrimeListAdapter(
+    private val crimes: List<Crime>,
+    private val onCrimeClicked: (crimeId: UUID) -> Unit
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
@@ -38,7 +40,7 @@ class CrimeListAdapter(private val crimes: List<Crime>) : RecyclerView.Adapter<R
         val crime = crimes[position]
         when (holder) {
             is CrimeHolder -> holder.bind(crime, onCrimeClicked)
-            is SeriousCrimeHolder -> holder.bind(crime, onCrimeClicked)
+            is SeriousCrimeHolder -> holder.bind(crime)
         }
 
     }
