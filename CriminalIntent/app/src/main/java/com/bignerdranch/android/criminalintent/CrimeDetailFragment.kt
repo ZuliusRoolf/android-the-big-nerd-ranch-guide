@@ -140,8 +140,12 @@ class CrimeDetailFragment : Fragment() {
                 startActivity(chooserIntent)
             }
 
-            crimeSuspect.text = crime.suspect.ifEmpty {
+            crimeSuspect.text = getContactName(crime.suspect).ifEmpty {
                 getString(R.string.crime_suspect_text)
+            }
+
+            crimeCall.text = getPhoneNumbersForContact(crime.suspect)[0].ifEmpty {
+                getString(R.string.crime_call_text)
             }
         }
     }
@@ -180,6 +184,51 @@ class CrimeDetailFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun getPhoneNumbersForContact(contactId: String?): List<String> {
+        val phoneNumbers = mutableListOf<String>()
+        if (contactId == null) return phoneNumbers
+
+        val cursor = requireActivity().contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+            "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+            arrayOf(contactId),
+            null
+        )
+
+        cursor?.use {
+            while (it.moveToNext()) {
+                val number = it.getString(
+                    it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                )
+                phoneNumbers.add(number)
+            }
+        }
+
+        return phoneNumbers
+    }
+
+    private fun getContactName(contactId: String?): String {
+        if (contactId == null) return ""
+        val cursor = requireActivity().contentResolver.query(
+            ContactsContract.Contacts.CONTENT_URI,
+            arrayOf(ContactsContract.Contacts.DISPLAY_NAME),
+            "${ContactsContract.Contacts._ID} = ?",
+            arrayOf(contactId),
+            null
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                return it.getString(
+                    it.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)
+                )
+            }
+        }
+
+        return "" // No contact found with that ID
     }
 
     private fun canResolveIntent(intent: Intent): Boolean {

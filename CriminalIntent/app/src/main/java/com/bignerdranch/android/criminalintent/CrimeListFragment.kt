@@ -1,5 +1,6 @@
 package com.bignerdranch.android.criminalintent
 
+import android.content.pm.PackageManager
 import android.graphics.Path
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +25,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
+import android.Manifest
+
+private val REQUEST_READ_CONTACTS = 1001
 
 class CrimeListFragment : Fragment() {
 
@@ -33,9 +39,19 @@ class CrimeListFragment : Fragment() {
 
     private val crimeListViewModel: CrimeListViewModel by viewModels()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.READ_CONTACTS),
+                REQUEST_READ_CONTACTS
+            )
+        }
     }
 
     override fun onCreateView(
