@@ -31,6 +31,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID
+import androidx.core.net.toUri
 
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
@@ -202,11 +203,23 @@ class CrimeDetailFragment : Fragment() {
                 startActivity(chooserIntent)
             }
 
-            crimeSuspect.text = crime.suspect.ifEmpty {
+            crimeSuspect.text = getContactName(crime.suspect).ifEmpty {
                 getString(R.string.crime_suspect_text)
             }
 
             updatePhoto(crime.photoFileName)
+
+            crimeCall.text = getPhoneNumbersForContact(crime.suspect)[0].ifEmpty {
+                getString(R.string.crime_call_text)
+            }
+
+            crimeCall.setOnClickListener {
+                val number = crimeCall.text.toString()
+                val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                    data = "tel:$number".toUri()
+                }
+                startActivity(dialIntent)
+            }
         }
     }
 
@@ -231,7 +244,7 @@ class CrimeDetailFragment : Fragment() {
     }
 
     private fun parseContactSelection(contactUri: Uri) {
-        val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+        val queryFields = arrayOf(ContactsContract.Contacts._ID)
 
         val queryCursor = requireActivity().contentResolver
             .query(contactUri, queryFields, null, null, null)
@@ -244,6 +257,51 @@ class CrimeDetailFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun getPhoneNumbersForContact(contactId: String?): List<String> {
+        val phoneNumbers = mutableListOf<String>()
+        if (contactId == null) return phoneNumbers
+
+        val cursor = requireActivity().contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+            "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+            arrayOf(contactId),
+            null
+        )
+
+        cursor?.use {
+            while (it.moveToNext()) {
+                val number = it.getString(
+                    it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                )
+                phoneNumbers.add(number)
+            }
+        }
+
+        return phoneNumbers
+    }
+
+    private fun getContactName(contactId: String?): String {
+        if (contactId == null) return ""
+        val cursor = requireActivity().contentResolver.query(
+            ContactsContract.Contacts.CONTENT_URI,
+            arrayOf(ContactsContract.Contacts.DISPLAY_NAME),
+            "${ContactsContract.Contacts._ID} = ?",
+            arrayOf(contactId),
+            null
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                return it.getString(
+                    it.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)
+                )
+            }
+        }
+
+        return "" // No contact found with that ID
     }
 
     private fun canResolveIntent(intent: Intent): Boolean {
