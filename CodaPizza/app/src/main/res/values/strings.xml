@@ -2,6 +2,7 @@
     <string name="app_name">Coda Pizza</string>
 
     <string name="place_order_button">Place Order (%1$s)</string>
+    <string name="order_placed_toast">Order submitted!</string>
 
     <string name="placement_prompt">Where do you want %1$s on your pizza?</string>
     <string name="placement_none">None</string>
@@ -15,4 +16,6 @@
     <string name="topping_peppers">Peppers</string>
     <string name="topping_pepperoni">Pepperoni</string>
     <string name="topping_pineapple">Pineapple</string>
+
+    <string name="pizza_preview">Pizza preview</string>
 </resources>
