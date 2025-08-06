@@ -1,5 +1,6 @@
 package com.bignerdranch.android.criminalintent
 
+import android.content.pm.PackageManager
 import android.graphics.Path
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -19,9 +22,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeDetailBinding
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeListBinding
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
+import android.Manifest
+
+private val REQUEST_READ_CONTACTS = 1001
 
 class CrimeListFragment : Fragment() {
 
@@ -33,9 +40,19 @@ class CrimeListFragment : Fragment() {
 
     private val crimeListViewModel: CrimeListViewModel by viewModels()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.READ_CONTACTS),
+                REQUEST_READ_CONTACTS
+            )
+        }
     }
 
     override fun onCreateView(
@@ -53,6 +70,11 @@ class CrimeListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.addCrimeButton.setOnClickListener {
+            showNewCrime()
+            Log.d("TAG", "${crimeListViewModel.crimes.value.size}")
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 crimeListViewModel.crimes.collect { crimes ->
@@ -62,6 +84,9 @@ class CrimeListFragment : Fragment() {
                                 CrimeListFragmentDirections.showCrimeDetail(crimeId)
                             )
                         }
+                    binding.noCrimeMessage.visibility =
+                        if (crimes.isEmpty()) View.VISIBLE
+                        else View.INVISIBLE
                 }
             }
         }
@@ -93,7 +118,8 @@ class CrimeListFragment : Fragment() {
                 id = UUID.randomUUID(),
                 title = "",
                 date = Date(),
-                isSolved = false
+                isSolved = false,
+                requiresPolice = false
             )
             crimeListViewModel.addCrime(newCrime)
             findNavController().navigate(

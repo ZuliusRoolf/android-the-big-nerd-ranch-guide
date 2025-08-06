@@ -10,12 +10,17 @@ import android.provider.ContactsContract
 import android.text.format.DateFormat
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import androidx.core.view.doOnLayout
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
@@ -28,8 +33,10 @@ import androidx.navigation.fragment.navArgs
 import com.bignerdranch.android.criminalintent.databinding.FragmentCrimeDetailBinding
 import kotlinx.coroutines.launch
 import java.io.File
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID
+import androidx.core.net.toUri
 
 private const val DATE_FORMAT = "EEE, MMM, dd"
 
@@ -61,8 +68,18 @@ class CrimeDetailFragment : Fragment() {
                 oldCrime.copy(photoFileName = photoName)
             }
         }
+        binding.crimePhoto.postDelayed(Runnable {
+            binding.crimePhoto.announceForAccessibility(
+                if (didTakePhoto) "Photo got Selected" else "Photo got Cancelled"
+            )
+        }, 100)
     }
     private var photoName: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,6 +103,12 @@ class CrimeDetailFragment : Fragment() {
             crimeSolved.setOnCheckedChangeListener { _, isChecked ->
                 crimeDetailViewModel.updateCrime { oldCrime ->
                     oldCrime.copy(isSolved = isChecked)
+                }
+            }
+
+            crimeSerious.setOnCheckedChangeListener { _, isChecked ->
+                crimeDetailViewModel.updateCrime { oldCrime ->
+                    oldCrime.copy(requiresPolice = isChecked)
                 }
             }
 
@@ -147,6 +170,21 @@ class CrimeDetailFragment : Fragment() {
             }
             crimeDetailViewModel.updateCrime { it.copy(date = newDate) }
         }
+
+        setFragmentResultListener(
+            TimePickerFragment.REQUEST_KEY_TIME
+        ) { requestKey, bundle ->
+            val newDate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getSerializable(TimePickerFragment.BUNDLE_KEY_TIME, Date::class.java)
+                    ?: throw IllegalStateException("Date is missing or not of type Date")
+            } else {
+                @Suppress("DEPRECATION")
+                bundle.getSerializable(TimePickerFragment.BUNDLE_KEY_TIME) as Date
+            }
+            crimeDetailViewModel.updateCrime { it.copy(date = newDate) }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
     override fun onDestroyView() {
@@ -154,19 +192,59 @@ class CrimeDetailFragment : Fragment() {
         _binding = null
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.fragment_crime_item, menu)
+        Log.d("TAG", "It runs here")
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        findNavController().popBackStack()
+        return when (item.itemId) {
+            R.id.delete_crime -> {
+                viewLifecycleOwner.lifecycleScope.launch{
+                    crimeDetailViewModel.removeCrime()
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun updateUi(crime: Crime) {
         binding.apply {
             if (crimeTitle.text.toString() != crime.title) {
                 crimeTitle.setText(crime.title)
             }
-            crimeDate.text = crime.date.toString()
+            val dateFormat = SimpleDateFormat(DATE_FORMAT, context?.resources?.configuration?.locales[0])
+            crimeDate.text = dateFormat.format(crime.date).toString()
+//            crimeDate.text = DateFormat.getDateFormat(context).format(crime.date).toString()
             crimeDate.setOnClickListener {
                 findNavController().navigate(
                     CrimeDetailFragmentDirections.selectDate(crime.date)
                 )
             }
+            crimeTime.setOnClickListener {
+                findNavController().navigate(
+                    CrimeDetailFragmentDirections.selectTime(crime.date)
+                )
+            }
+
+            crimePhoto.setOnClickListener {
+                if (crime.photoFileName == null) return@setOnClickListener
+                val photoFile = File(requireContext().applicationContext.filesDir,
+                    crime.photoFileName)
+                val imageUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.bignerdranch.android.criminalintent.fileprovider",
+                    photoFile
+                )
+                ImageViewDialogFragment.newInstance(imageUri)
+                    .show(parentFragmentManager, "zoomed_image")
+            }
 
             crimeSolved.isChecked = crime.isSolved
+            crimeSerious.isChecked = crime.requiresPolice
 
             crimeReport.setOnClickListener {
                 val reportIntent = Intent(Intent.ACTION_SEND).apply {
@@ -181,11 +259,25 @@ class CrimeDetailFragment : Fragment() {
                 startActivity(chooserIntent)
             }
 
-            crimeSuspect.text = crime.suspect.ifEmpty {
+            crimeSuspect.text = getContactName(crime.suspect).ifEmpty {
                 getString(R.string.crime_suspect_text)
             }
 
             updatePhoto(crime.photoFileName)
+
+            if (getPhoneNumbersForContact(crime.suspect).isNotEmpty()) {
+                crimeCall.text = getPhoneNumbersForContact(crime.suspect)[0].ifEmpty {
+                    getString(R.string.crime_call_text)
+                }
+            }
+
+            crimeCall.setOnClickListener {
+                val number = crimeCall.text.toString()
+                val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                    data = "tel:$number".toUri()
+                }
+                startActivity(dialIntent)
+            }
         }
     }
 
@@ -196,11 +288,11 @@ class CrimeDetailFragment : Fragment() {
             getString(R.string.crime_report_unsolved)
         }
 
-        val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
+        val dateString = DateFormat.getDateFormat(context).format(crime.date)
         val suspectText = if (crime.suspect.isBlank()) {
             getString(R.string.crime_report_no_suspect)
         } else {
-            getString(R.string.crime_report_suspect, crime.suspect)
+            getString(R.string.crime_report_suspect, getContactName(crime.suspect))
         }
 
         return getString(
@@ -210,7 +302,7 @@ class CrimeDetailFragment : Fragment() {
     }
 
     private fun parseContactSelection(contactUri: Uri) {
-        val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+        val queryFields = arrayOf(ContactsContract.Contacts._ID)
 
         val queryCursor = requireActivity().contentResolver
             .query(contactUri, queryFields, null, null, null)
@@ -223,6 +315,51 @@ class CrimeDetailFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun getPhoneNumbersForContact(contactId: String?): List<String> {
+        val phoneNumbers = mutableListOf<String>()
+        if (contactId == null) return phoneNumbers
+
+        val cursor = requireActivity().contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+            "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
+            arrayOf(contactId),
+            null
+        )
+
+        cursor?.use {
+            while (it.moveToNext()) {
+                val number = it.getString(
+                    it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                )
+                phoneNumbers.add(number)
+            }
+        }
+
+        return phoneNumbers
+    }
+
+    private fun getContactName(contactId: String?): String {
+        if (contactId == null) return ""
+        val cursor = requireActivity().contentResolver.query(
+            ContactsContract.Contacts.CONTENT_URI,
+            arrayOf(ContactsContract.Contacts.DISPLAY_NAME),
+            "${ContactsContract.Contacts._ID} = ?",
+            arrayOf(contactId),
+            null
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                return it.getString(
+                    it.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)
+                )
+            }
+        }
+
+        return "" // No contact found with that ID
     }
 
     private fun canResolveIntent(intent: Intent): Boolean {
@@ -258,6 +395,19 @@ class CrimeDetailFragment : Fragment() {
                 binding.crimePhoto.tag = null
                 binding.crimePhoto.contentDescription =
                     getString(R.string.crime_photo_no_image_description)
+            }
+        }
+    }
+
+    val callback = object : OnBackPressedCallback(true){
+        override fun handleOnBackPressed() {
+            if (binding.crimeTitle.text.isEmpty()) {
+                Toast.makeText(requireContext(), "The crime needs a title!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+            else {
+                isEnabled = false
+                requireActivity().onBackPressedDispatcher.onBackPressed()
             }
         }
     }

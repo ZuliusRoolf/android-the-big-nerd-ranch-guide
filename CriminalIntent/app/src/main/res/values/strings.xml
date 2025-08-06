@@ -11,6 +11,7 @@
     <string name="crime_photo_image_description">Crime scene photo (set)</string>
     <string name="crime_suspect_text">Choose Suspect</string>
     <string name="crime_report_text">Send Crime Report</string>
+    <string name="crime_call_text">Call</string>
 
     <string name="crime_report">%1$s!
       The crime was discovered on %2$s. %3$s, and %4$s
@@ -28,4 +29,7 @@
 
     <string name="img_handcuffs">Handcuffs</string>
     <string name="new_crime">New Crime</string>
+    <string name="delete_crime">Delete Crime</string>
+    <string name="crime_contact_police">Contact Police</string>
+    <string name="crime_serious">Serious</string>
 </resources>
