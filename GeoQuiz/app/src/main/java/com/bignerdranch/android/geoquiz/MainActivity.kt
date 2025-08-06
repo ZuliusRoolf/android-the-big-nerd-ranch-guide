@@ -32,8 +32,17 @@ class MainActivity : AppCompatActivity() {
     ) { result ->
         // Handle result
         if (result.resultCode == Activity.RESULT_OK) {
-            quizViewModel.isCheater =
-                result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+            val cheated = result.data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+            if (cheated) {
+                quizViewModel.cheatedOnCurrentQuestion(cheated)
+                quizViewModel.cheatTokens -= 1
+                val cheatTokenString = "Cheat Tokens: ${quizViewModel.cheatTokens}"
+                binding.cheatTokensTextView.text = cheatTokenString
+                if (quizViewModel.cheatTokens == 0) {
+                    binding.cheatButton.isEnabled = false
+                }
+            }
+
         }
     }
 
@@ -74,6 +83,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateQuestion()
+        val cheatTokenString = "Cheat Tokens: ${quizViewModel.cheatTokens}"
+        binding.cheatTokensTextView.text = cheatTokenString
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             blurCheatButton()
@@ -108,18 +119,30 @@ class MainActivity : AppCompatActivity() {
     private fun updateQuestion() {
         val questionTextResId = quizViewModel.currentQuestionText
         binding.questionTextView.setText(questionTextResId)
+        updateButtonState()
     }
 
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
 
         val messageResId = when {
-            quizViewModel.isCheater -> R.string.judgment_toast
+            quizViewModel.isCheaterOnCurrentQuestion() -> R.string.judgment_toast
             userAnswer == correctAnswer -> R.string.correct_toast
             else -> R.string.incorrect_toast
         }
+        quizViewModel.setAnswer(if (userAnswer == correctAnswer) {100} else {0})
+        updateButtonState()
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
+        val result = quizViewModel.gradeAnswers()
+        if (result != null) {
+            Toast.makeText(this, "$result% correct!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateButtonState() {
+        binding.trueButton.isEnabled = (quizViewModel.getAnswer() == null)
+        binding.falseButton.isEnabled = (quizViewModel.getAnswer() == null)
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
